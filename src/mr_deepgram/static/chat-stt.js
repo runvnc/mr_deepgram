@@ -117,6 +117,7 @@ class ChatSTT extends BaseEl {
     this.textInput = document.querySelector('chat-ai').shadowRoot
                     .querySelector('chat-form')
                     .shadowRoot.querySelectorAll('#inp_message')[0]
+    console.log('textInput', this.textInput)
  
   }
 
@@ -210,11 +211,9 @@ class ChatSTT extends BaseEl {
         this.transcript = ""
         this.partialTranscript = ""
         
-        const chatForm = this.closest('chat-form')
-        if (chatForm) {
-            this.textInput.value = inputText
-            chatForm._send()
-        }
+        this.textInput.value = inputText
+        chatForm._send()
+        
       }
       this.transcript = ''
       this.partialTranscript = ''
@@ -256,12 +255,12 @@ class ChatSTT extends BaseEl {
           console.log("this is", this)
           console.log("this.name is ", this.name)
           this.socket = this.deepgram.listen.live({
-            model: "nova-2",
-            //smart_format: true,
+            model: "nova-3",
+            smart_format: true,
             interim_results: true,
-            //punctuate: true,
-            //numerals: true,
-            //keyterm: "Biolimitless, Bio limitless",
+            punctuate: true,
+            numerals: true,
+            keyterm: "Biolimitless, Bio limitless",
             endpointing: 10
           })
           console.log({socket: this.socket})
@@ -275,10 +274,7 @@ class ChatSTT extends BaseEl {
 
             if (transcript_data !== "") {
               console.log("Transcript:", transcript_data)
-              const chatForm = this.closest('chat-form')
-              if (chatForm) {
-                  this.textInput.value = transcript_data
-              }
+              this.textInput.value = transcript_data
 
               if (data.is_final) {
                 this.transcript += transcript_data + " "

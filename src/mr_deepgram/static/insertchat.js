@@ -5,7 +5,7 @@ export function insertChatSTT() {
     console.log("Inserting STT")
     // Find the chat-right-insert div in any ChatForm instances
     const chatForms = document.querySelectorAll('chat-form')
-    
+    console.log({chatForms})    
     chatForms.forEach(form => {
         const rightInsert = form.shadowRoot.querySelector('#chat-right-insert')
         if (rightInsert) {

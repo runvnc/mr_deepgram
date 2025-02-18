@@ -113,6 +113,10 @@ class ChatSTT extends BaseEl {
     this.deepgram = null
     this.keepAlive = null
     this.partialTranscript = ''
+    this.textInput = document.querySelector('chat-ai').shadowRoot
+                    .querySelector('chat-form')
+                    .shadowRoot.querySelectorAll('#inp_message')[0]
+ 
   }
 
   async getMicrophone() {
@@ -197,14 +201,11 @@ class ChatSTT extends BaseEl {
         if (inputText == "") inputText = this.partialTranscript;
         this.transcript = ""
         this.partialTranscript = ""
- 
+        
         const chatForm = this.closest('chat-form')
         if (chatForm) {
-          const input = chatForm.shadowRoot.querySelector('#inp_message')
-          if (input) {
-            input.value = inputText 
+            this.textInput.value = inputText
             chatForm._send()
-          }
         }
       }
       this.transcript = ''
@@ -261,12 +262,10 @@ class ChatSTT extends BaseEl {
         const transcript_data = data.channel.alternatives[0].transcript
 
         if (transcript_data !== "") {
+          console.log("Transcript:", transcript_data)
           const chatForm = this.closest('chat-form')
           if (chatForm) {
-            const input = chatForm.shadowRoot.querySelector('#inp_message')
-            if (input) {
-              input.value = transcript_data
-            }
+              this.textInput.value = transcript_data
           }
 
           if (data.is_final) {

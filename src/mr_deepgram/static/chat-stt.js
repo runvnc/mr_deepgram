@@ -2,7 +2,7 @@ import { LitElement, html, css } from './lit-core.min.js'
 import { BaseEl } from './base.js'
 const { createClient } = deepgram;
 
-class ChatTTS extends BaseEl {
+class ChatSTT extends BaseEl {
   static properties = {
     isRecording: { type: Boolean },
     transcript: { type: String },
@@ -123,6 +123,7 @@ class ChatTTS extends BaseEl {
   }
 
   async openMicrophone() {
+    console.log('---- openMicrophone ----')
     this.transcript = ''
     this.isRecording = true
     this.requestUpdate()
@@ -136,7 +137,7 @@ class ChatTTS extends BaseEl {
           console.warn("error closing microphone", e)
         }
       }
-
+      await this.initSTT()
       this.microphone = await this.getMicrophone()
       await this.microphone.start(50)
 
@@ -167,14 +168,22 @@ class ChatTTS extends BaseEl {
   }
 
   async closeMicrophone() {
+    console.log('---- closeMicrophone ----')
     if (!this.microphone) {
       return
     }
 
     try {
       this.microphone.stop()
+      this.deepgram = null;
     } catch (e) {
       console.warn("Error stopping microphone:", e)
+    }
+
+    try {
+      this.socket.close()
+    } catch (e) {
+      console.warn("Error closing socket")
     }
 
     setTimeout(() => {
@@ -209,20 +218,10 @@ class ChatTTS extends BaseEl {
       this.userMedia = null
       this.isRecording = false
       this.requestUpdate()
-      
-      setTimeout(() => {
-        if (!this.isInitialized) {
-          this.initTTS()
-        }
-      }, 30)
     }, 50)
   }
 
-  async initTTS() {
-    if (this.isInitialized) {
-      return
-    }
-
+  async initSTT() {
     try {
       const key = "a2dae355bff63649e396812508e25624420fc377" // TODO: Get from environment
 
@@ -238,12 +237,13 @@ class ChatTTS extends BaseEl {
       this.deepgram = createClient(key)
 
       this.socket = this.deepgram.listen.live({
-        model: "nova-2",
+        model: "nova-3",
         smart_format: true,
         interim_results: true,
         punctuate: true,
         numerals: true,
-        endpointing: 50
+        keyterm: ["Biolimitless", "Bio limitless"],
+        endpointing: 10
       })
 
       this.socket.on("open", () => {
@@ -280,17 +280,15 @@ class ChatTTS extends BaseEl {
         console.error("Deepgram socket error:", e)
         this.socket.removeAllListeners()
         setTimeout(() => {
-          this.initTTS()
+          this.initSTT()
         }, 30)
       })
 
       this.socket.on("close", () => {
         this.socket.removeAllListeners()
-        setTimeout(() => {
-          if (!this.isInitialized) {
-            this.initTTS()
-          }
-        }, 30)
+        /* setTimeout(() => {
+            this.initSTT()
+        }, 30) */
       })
 
       if (this.keepAlive) {
@@ -310,14 +308,14 @@ class ChatTTS extends BaseEl {
       this.isInitialized = true
 
     } catch (e) {
-      console.error('Error initializing TTS:', e)
+      console.error('Error initializing STT:', e)
       this.isInitialized = false
     }
   }
 
   connectedCallback() {
     super.connectedCallback()
-    this.initTTS()
+    this.initSTT()
   }
 
   disconnectedCallback() {
@@ -383,4 +381,4 @@ class ChatTTS extends BaseEl {
   }
 }
 
-customElements.define('chat-tts', ChatTTS)
+customElements.define('chat-tts', ChatSTT)

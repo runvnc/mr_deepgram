@@ -260,7 +260,7 @@ class ChatSTT extends BaseEl {
             interim_results: true,
             punctuate: true,
             numerals: true,
-            keyterm: "Biolimitless, Bio limitless",
+            keyterm: ["Biolimitless", "Bio limitless"],
             endpointing: 10
           })
           console.log({socket: this.socket})

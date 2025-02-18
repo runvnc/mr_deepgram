@@ -2,12 +2,14 @@
 
 // Function to dynamically insert the ChatTTS component into ChatForm
 export function insertChatTTS() {
+    console.log("Inserting STT")
     // Find the chat-right-insert div in any ChatForm instances
     const chatForms = document.querySelectorAll('chat-form')
     
     chatForms.forEach(form => {
         const rightInsert = form.shadowRoot.querySelector('#chat-right-insert')
         if (rightInsert) {
+            console.log("Found chat-right-insert")
             // Create and insert the ChatTTS component
             const chatTTS = document.createElement('chat-tts')
             rightInsert.appendChild(chatTTS)
@@ -21,6 +23,7 @@ export function insertChatTTS() {
 // Add listener to initialize TTS when page loads
 window.addEventListener('load', () => {
     // Small delay to ensure ChatForm is fully initialized
+    console.log("Adding event listener for STT Deepgram")
     setTimeout(insertChatTTS, 100)
 })
 

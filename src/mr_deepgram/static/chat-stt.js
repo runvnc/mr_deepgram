@@ -238,7 +238,7 @@ class ChatSTT extends BaseEl {
     try {
       const key = "a2dae355bff63649e396812508e25624420fc377" // TODO: Get from environment
 
-      if (this.socket?.getReadyState() != 1) {
+      if (!this.socket || this.socket.getReadyState() != 1) {
         try {
           console.log("Deepgram not open/connected. Creating client")
           try {

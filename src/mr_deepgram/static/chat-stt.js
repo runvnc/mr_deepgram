@@ -111,6 +111,7 @@ class ChatSTT extends BaseEl {
     this.microphone = null
     this.socket = null
     this.deepgram = null
+    this.name = "chat-stt"
     this.keepAlive = null
     this.partialTranscript = ''
     this.textInput = document.querySelector('chat-ai').shadowRoot
@@ -252,7 +253,8 @@ class ChatSTT extends BaseEl {
           this.socket = null
           this.deepgram = createClient(key)
           console.log("client: created deepgram client")
-
+          console.log("this is", this)
+          console.log("this.name is ", this.name)
           this.socket = this.deepgram.listen.live({
             model: "nova-2",
             //smart_format: true,

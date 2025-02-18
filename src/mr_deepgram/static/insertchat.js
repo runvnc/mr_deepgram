@@ -4,20 +4,17 @@
 export function insertChatSTT() {
     console.log("Inserting STT")
     // Find the chat-right-insert div in any ChatForm instances
-    const chatForms = document.querySelectorAll('chat-form')
-    console.log({chatForms})    
-    chatForms.forEach(form => {
-        const rightInsert = form.shadowRoot.querySelector('#chat-right-insert')
-        if (rightInsert) {
-            console.log("Found chat-right-insert")
-            // Create and insert the ChatSTT component
-            const chatSTT = document.createElement('chat-tts')
-            rightInsert.appendChild(chatSTT)
-            rightInsert.style.display = 'flex'
-            rightInsert.style.alignItems = 'center'
-            rightInsert.style.marginRight = '10px'
-        }
-    })
+    const Insert = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form').shadowRoot.querySelectorAll('#chat-insert-left')
+    const leftInsert = form.shadowRoot.querySelector('#chat-insert-left')
+    if (leftInsert) {
+        console.log("Found chat-insert-left")
+        // Create and insert the ChatSTT component
+        const chatSTT = document.createElement('chat-tts')
+        leftInsert.appendChild(chatSTT)
+        leftInsert.style.display = 'flex'
+        leftInsert.style.alignItems = 'center'
+        leftInsert.style.marginRight = '10px'
+    }
 }
 
 // Add listener to initialize STT when page loads

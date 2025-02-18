@@ -157,6 +157,7 @@ class ChatSTT extends BaseEl {
       this.microphone.ondataavailable = (e) => {
         const data = e.data
         if (this.socket) {
+          console.log("client: sending data to deepgram")
           this.socket.send(data)
         }
       }
@@ -239,6 +240,7 @@ class ChatSTT extends BaseEl {
       }
 
       this.deepgram = createClient(key)
+      console.log("client: created deepgram client")
 
       this.socket = this.deepgram.listen.live({
         model: "nova-3",
@@ -249,12 +251,13 @@ class ChatSTT extends BaseEl {
         keyterm: ["Biolimitless", "Bio limitless"],
         endpointing: 10
       })
-
+      
       this.socket.on("open", () => {
-        console.log("client: connected to websocket")
+        console.log("client: deepgram connected to websocket")
       })
 
       this.socket.on("Results", (data) => {
+        console.log("Deepgram Results:", data)
         const transcript_data = data.channel.alternatives[0].transcript
 
         if (transcript_data !== "") {

@@ -185,7 +185,9 @@ class ChatSTT extends BaseEl {
     }
 
     try {
+      console.log("deepgram: closing socket")
       this.socket.finish()
+      console.log("deepgram: socket closed")
       this.socket.removeAllListeners()
     } catch (e) {
       console.warn("Error closing socket")
@@ -249,7 +251,7 @@ class ChatSTT extends BaseEl {
         interim_results: true,
         punctuate: true,
         numerals: true,
-        //keyterm: ["Biolimitless", "Bio limitless"],
+        keyterm: ["Biolimitless", "Bio limitless"],
         endpointing: 10
       })
       

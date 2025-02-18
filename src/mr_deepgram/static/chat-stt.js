@@ -248,7 +248,7 @@ class ChatSTT extends BaseEl {
         interim_results: true,
         punctuate: true,
         numerals: true,
-        keyterm: ["Biolimitless", "Bio limitless"],
+        //keyterm: ["Biolimitless", "Bio limitless"],
         endpointing: 10
       })
       
@@ -292,6 +292,7 @@ class ChatSTT extends BaseEl {
       })
 
       this.socket.on("close", () => {
+        console.log("Deepgram socket closed")
         this.socket.removeAllListeners()
         /* setTimeout(() => {
             this.initSTT()

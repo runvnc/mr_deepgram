@@ -235,12 +235,14 @@ class ChatSTT extends BaseEl {
 
       if (this.socket?.getReadyState() != 1) {
         try {
+          console.log("Deepgram not open/connected. Creating client")
           try {
-            this.socket.finish()
+            this.socket.removeAllListeners()
           } catch (e) {
+             console.warn("error removing socket listeners", e)
           }
-          this.socket.removeAllListeners()
           this.deepgram = null
+          this.socket = null
           this.deepgram = createClient(key)
           console.log("client: created deepgram client")
 

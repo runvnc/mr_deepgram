@@ -1,0 +1,15 @@
+{
+  "name": "mr_heygen",
+  "version": "1.0.0",
+  "description": "Heygen avatar integration",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@deepgram/sdk": "^1.3.1",
+    "@heygen/streaming-avatar": "^1.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

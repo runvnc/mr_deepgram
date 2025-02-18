@@ -141,7 +141,10 @@ class ChatSTT extends BaseEl {
           console.warn("error closing microphone", e)
         }
       }
+      console.log("waiting for STT to initialize")
       await this.initSTT()
+      console.log("STT initialized")
+      console.log("client: opening microphone")
       this.microphone = await this.getMicrophone()
       await this.microphone.start(50)
 
@@ -163,6 +166,8 @@ class ChatSTT extends BaseEl {
         if (this.socket) {
           console.log("client: sending data to deepgram")
           this.socket.send(data)
+        } else {
+          console.log("client: socket not initialized, can't send audio data to deepgram")
         }
       }
     } catch (e) {
@@ -238,9 +243,11 @@ class ChatSTT extends BaseEl {
           console.log("Deepgram not open/connected. Creating client")
           try {
             this.socket.removeAllListeners()
+            this.socket.finish()
           } catch (e) {
              console.warn("error removing socket listeners", e)
           }
+          
           this.deepgram = null
           this.socket = null
           this.deepgram = createClient(key)
@@ -255,7 +262,7 @@ class ChatSTT extends BaseEl {
             //keyterm: "Biolimitless, Bio limitless",
             endpointing: 10
           })
-          
+          console.log({socket: this.socket})
           this.socket.on("open", () => {
             console.log("client: deepgram connected to websocket")
           })

@@ -313,7 +313,6 @@ class ChatSTT extends BaseEl {
         } catch (e) {
           console.warn("error removing socket listeners", e)
         }
-        this.socket = undefined
       }
  
       if (this.keepAlive) {

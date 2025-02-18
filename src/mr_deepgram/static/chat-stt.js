@@ -185,15 +185,15 @@ class ChatSTT extends BaseEl {
     }
 
     try {
-      console.log("deepgram: closing socket")
+      //console.log("deepgram: closing socket")
       //this.socket.finish()
-      console.log("deepgram: socket closed")
+      //console.log("deepgram: socket closed")
       //this.socket.removeAllListeners()
     } catch (e) {
       console.warn("Error closing socket")
     }
     try {
-      this.deepgram = null;
+      //this.deepgram = null;
     } catch (e) {
       console.warn("Error closing deepgram client")
     }
@@ -233,73 +233,78 @@ class ChatSTT extends BaseEl {
     try {
       const key = "a2dae355bff63649e396812508e25624420fc377" // TODO: Get from environment
 
-      if (this.socket) {
+      if (this.socket?.getReadyState() != 1) {
         try {
+          try {
+            this.socket.finish()
+          } catch (e) {
+          }
           this.socket.removeAllListeners()
+          this.deepgram = null
+          this.deepgram = createClient(key)
+          console.log("client: created deepgram client")
+
+          this.socket = this.deepgram.listen.live({
+            model: "nova-3",
+            smart_format: true,
+            interim_results: true,
+            punctuate: true,
+            numerals: true,
+            keyterm: ["Biolimitless", "Bio limitless"],
+            endpointing: 10
+          })
+          
+          this.socket.on("open", () => {
+            console.log("client: deepgram connected to websocket")
+          })
+
+          this.socket.on("Results", (data) => {
+            console.log("Deepgram Results:", data)
+            const transcript_data = data.channel.alternatives[0].transcript
+
+            if (transcript_data !== "") {
+              console.log("Transcript:", transcript_data)
+              const chatForm = this.closest('chat-form')
+              if (chatForm) {
+                  this.textInput.value = transcript_data
+              }
+
+              if (data.is_final) {
+                this.transcript += transcript_data + " "
+                
+                if (!this.dontInterrupt) {
+                  const chatForm = this.closest('chat-form')
+                  if (chatForm) {
+                    chatForm._send()
+                  }
+                  this.transcript = ""
+                }
+              }
+            }
+          })
+
+          this.socket.on("error", (e) => {
+            console.error("Deepgram socket error:", e)
+            this.socket.removeAllListeners()
+            setTimeout(() => {
+              this.initSTT()
+            }, 30)
+          })
+
+          this.socket.on("close", () => {
+            console.log("Deepgram socket closed")
+            this.socket.removeAllListeners()
+            /* setTimeout(() => {
+                this.initSTT()
+            }, 30) */
+          })
+
         } catch (e) {
           console.warn("error removing socket listeners", e)
         }
         this.socket = undefined
       }
-
-      this.deepgram = createClient(key)
-      console.log("client: created deepgram client")
-
-      this.socket = this.deepgram.listen.live({
-        model: "nova-3",
-        smart_format: true,
-        interim_results: true,
-        punctuate: true,
-        numerals: true,
-        keyterm: ["Biolimitless", "Bio limitless"],
-        endpointing: 10
-      })
-      
-      this.socket.on("open", () => {
-        console.log("client: deepgram connected to websocket")
-      })
-
-      this.socket.on("Results", (data) => {
-        console.log("Deepgram Results:", data)
-        const transcript_data = data.channel.alternatives[0].transcript
-
-        if (transcript_data !== "") {
-          console.log("Transcript:", transcript_data)
-          const chatForm = this.closest('chat-form')
-          if (chatForm) {
-              this.textInput.value = transcript_data
-          }
-
-          if (data.is_final) {
-            this.transcript += transcript_data + " "
-            
-            if (!this.dontInterrupt) {
-              const chatForm = this.closest('chat-form')
-              if (chatForm) {
-                chatForm._send()
-              }
-              this.transcript = ""
-            }
-          }
-        }
-      })
-
-      this.socket.on("error", (e) => {
-        console.error("Deepgram socket error:", e)
-        this.socket.removeAllListeners()
-        setTimeout(() => {
-          this.initSTT()
-        }, 30)
-      })
-
-      this.socket.on("close", () => {
-        console.log("Deepgram socket closed")
-        this.socket.removeAllListeners()
-        /* setTimeout(() => {
-            this.initSTT()
-        }, 30) */
-      })
-
+ 
       if (this.keepAlive) {
         clearInterval(this.keepAlive)
       }

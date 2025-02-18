@@ -4,7 +4,7 @@ const { createClient } = deepgram;
 
 class ChatSTT extends BaseEl {
   static properties = {
-    isRecording: { type: Boolean, reflect: true, attribute: 'recording' },
+    isRecording: { type: Boolean },
     transcript: { type: String },
     dontInterrupt: { type: Boolean },
     isInitialized: { type: Boolean }

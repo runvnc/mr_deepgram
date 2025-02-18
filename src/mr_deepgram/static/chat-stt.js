@@ -248,10 +248,10 @@ class ChatSTT extends BaseEl {
 
           this.socket = this.deepgram.listen.live({
             model: "nova-3",
-            smart_format: true,
+            //smart_format: true,
             interim_results: true,
-            punctuate: true,
-            numerals: true,
+            //punctuate: true,
+            //numerals: true,
             //keyterm: "Biolimitless, Bio limitless",
             endpointing: 10
           })

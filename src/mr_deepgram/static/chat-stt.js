@@ -1,6 +1,6 @@
 import { LitElement, html, css } from './lit-core.min.js'
 import { BaseEl } from './base.js'
-import { createClient } from deepgram;
+const { createClient } = deepgram;
 
 class ChatTTS extends BaseEl {
   static properties = {

@@ -1,7 +1,11 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 export default defineConfig({
+  plugins: [
+    nodePolyfills()
+  ],
   build: {
     outDir: 'static',
     emptyOutDir: false,
@@ -16,17 +20,6 @@ export default defineConfig({
   },
   define: {
     global: 'globalThis',
-    'Buffer': 'globalThis.Buffer',
     'process.env.NODE_DEBUG': 'false'
-  },
-  resolve: {
-    alias: {
-      buffer: 'buffer/',
-      stream: 'stream-browserify',
-      util: 'util/'
-    }
-  },
-  optimizeDeps: {
-    include: ['buffer', 'process']
   }
 })

@@ -1,6 +1,6 @@
 import { LitElement, html, css } from './lit-core.min.js'
 import { BaseEl } from './base.js'
-import { createClient } from "@deepgram/sdk"
+import { createClient } from "https://cdn.jsdelivr.net/npm/@deepgram/sdk/+esm";
 
 class ChatTTS extends BaseEl {
   static properties = {

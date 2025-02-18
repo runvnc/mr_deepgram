@@ -6,13 +6,8 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@deepgram/sdk": "^1.3.1"
   },
   "devDependencies": {
-    "buffer": "^6.0.3",
-    "stream-browserify": "^3.0.0",
-    "util": "^0.12.5",
-    "vite": "^5.0.0",
-    "vite-plugin-node-polyfills": "^0.23.0"
+    "vite": "^5.0.0"
   }
 }

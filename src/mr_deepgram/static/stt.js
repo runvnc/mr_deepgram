@@ -8,7 +8,7 @@ let socket = null;
 let transcript = ""
 let keepAlive;
 let _deepgram;
-let initializingTTS = false;
+let initializingSTT = false;
 let partialTranscript = "";
 let dontInterrupt = false;
 
@@ -102,7 +102,7 @@ async function closeMicrophone() {
     document.body.classList.remove("recording");
     microphone = null;
     setTimeout(() => {
-      initTTS()
+      initSTT()
     }, 30)
 
   }, 50)
@@ -177,12 +177,12 @@ async function getTempApiKey() {
   return json.key;
 }
 
-async function initTTS() {
-  if (initializingTTS) {
-    console.log("already initializing TTS, returning")
+async function initSTT() {
+  if (initializingSTT) {
+    console.log("already initializing STT, returning")
     return;
   }
-  initializingTTS = true;
+  initializingSTT = true;
   try {
     //const key = await getTempApiKey();
     //const key = meta.env.VITE_DEEPGRAM_API_KEY 
@@ -256,7 +256,7 @@ async function initTTS() {
         socket.removeAllListeners()
         setTimeout( () => {
           console.log("%c socket error, reset", "background: green; color: yellow");
-          initTTS()
+          initSTT()
         }, 30)
     })
 
@@ -270,21 +270,21 @@ async function initTTS() {
         console.log(e);
         socket.removeAllListeners();
         setTimeout(() => {
-          if (!initializingTTS) initTTS()
+          if (!initializingSTT) initSTT()
         }, 30)
     })
 
     await start(socket);
 
   } catch (e) {
-    console.error('error in inittts',e);
+    console.error('error in initstt',e);
   } finally {
-    initializingTTS = false;
+    initializingSTT = false;
   }
 }
 
 window.addEventListener("load", async () => {
-  console.log("Initializing TTS")
-  await initTTS();
+  console.log("Initializing STT")
+  await initSTT();
 })
 

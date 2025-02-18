@@ -8,7 +8,7 @@ export default defineConfig({
     rollupOptions: {
       input: resolve(__dirname, 'static/main.js'),
       output: {
-        entryFileNames: 'ttsbundle.js',
+        entryFileNames: 'sttbundle.js',
         format: 'iife',
         dir: 'static'
       }

@@ -1,7 +1,7 @@
 
 
-// Function to dynamically insert the ChatTTS component into ChatForm
-export function insertChatTTS() {
+// Function to dynamically insert the ChatSTT component into ChatForm
+export function insertChatSTT() {
     console.log("Inserting STT")
     // Find the chat-right-insert div in any ChatForm instances
     const chatForms = document.querySelectorAll('chat-form')
@@ -10,9 +10,9 @@ export function insertChatTTS() {
         const rightInsert = form.shadowRoot.querySelector('#chat-right-insert')
         if (rightInsert) {
             console.log("Found chat-right-insert")
-            // Create and insert the ChatTTS component
-            const chatTTS = document.createElement('chat-tts')
-            rightInsert.appendChild(chatTTS)
+            // Create and insert the ChatSTT component
+            const chatSTT = document.createElement('chat-tts')
+            rightInsert.appendChild(chatSTT)
             rightInsert.style.display = 'flex'
             rightInsert.style.alignItems = 'center'
             rightInsert.style.marginRight = '10px'
@@ -20,11 +20,11 @@ export function insertChatTTS() {
     })
 }
 
-// Add listener to initialize TTS when page loads
+// Add listener to initialize STT when page loads
 window.addEventListener('load', () => {
     // Small delay to ensure ChatForm is fully initialized
     console.log("Adding event listener for STT Deepgram")
-    setTimeout(insertChatTTS, 100)
+    setTimeout(insertChatSTT, 100)
 })
 
 // Optional: Re-run insertion when new ChatForm elements are added
@@ -34,7 +34,7 @@ const observer = new MutationObserver((mutations) => {
         mutation.addedNodes.forEach((node) => {
             if (node.nodeName === 'CHAT-FORM') {
                 // Wait for shadow DOM to be created
-                setTimeout(() => insertChatTTS(), 100)
+                setTimeout(() => insertChatSTT(), 100)
             }
         })
     })

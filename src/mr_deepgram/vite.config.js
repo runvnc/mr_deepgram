@@ -13,5 +13,20 @@ export default defineConfig({
         dir: 'static'
       }
     }
+  },
+  define: {
+    global: 'globalThis',
+    'Buffer': 'globalThis.Buffer',
+    'process.env.NODE_DEBUG': 'false'
+  },
+  resolve: {
+    alias: {
+      buffer: 'buffer/',
+      stream: 'stream-browserify',
+      util: 'util/'
+    }
+  },
+  optimizeDeps: {
+    include: ['buffer', 'process']
   }
 })

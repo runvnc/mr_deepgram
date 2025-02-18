@@ -175,17 +175,21 @@ class ChatSTT extends BaseEl {
 
     try {
       this.microphone.stop()
-      this.deepgram = null;
     } catch (e) {
       console.warn("Error stopping microphone:", e)
     }
 
     try {
-      this.socket.close()
+      this.socket.finish()
+      this.socket.removeAllListeners()
     } catch (e) {
       console.warn("Error closing socket")
     }
-
+    try {
+      this.deepgram = null;
+    } catch (e) {
+      console.warn("Error closing deepgram client")
+    }
     setTimeout(() => {
       if (this.partialTranscript != '' || this.transcript !== '') {
         let inputText = this.transcript

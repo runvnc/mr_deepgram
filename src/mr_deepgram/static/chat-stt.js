@@ -247,7 +247,7 @@ class ChatSTT extends BaseEl {
           console.log("client: created deepgram client")
 
           this.socket = this.deepgram.listen.live({
-            model: "nova-3",
+            model: "nova-2",
             //smart_format: true,
             interim_results: true,
             //punctuate: true,

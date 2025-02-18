@@ -186,9 +186,9 @@ class ChatSTT extends BaseEl {
 
     try {
       console.log("deepgram: closing socket")
-      this.socket.finish()
+      //this.socket.finish()
       console.log("deepgram: socket closed")
-      this.socket.removeAllListeners()
+      //this.socket.removeAllListeners()
     } catch (e) {
       console.warn("Error closing socket")
     }

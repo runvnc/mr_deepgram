@@ -134,7 +134,11 @@ class ChatSTT extends BaseEl {
     this.transcript = ''
     this.isRecording = true
     this.requestUpdate()
-
+  
+    try {
+      window.shutUp()
+    } catch (e) {
+    }
     try {
       if (this.microphone) {
         try {

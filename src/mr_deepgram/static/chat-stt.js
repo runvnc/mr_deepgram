@@ -112,7 +112,7 @@ class ChatSTT extends BaseEl {
     this.socket = null
     this.deepgram = null
     this.name = "chat-stt"
-    this.keepAlive = null
+    this.keepAlive = true
     this.partialTranscript = ''
     this.chatForm = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form')
     this.textInput = this.chatForm.shadowRoot.querySelectorAll('#inp_message')[0]
@@ -167,7 +167,11 @@ class ChatSTT extends BaseEl {
         const data = e.data
         if (this.socket) {
           console.log("client: sending data to deepgram")
-          this.socket.send(data)
+          try {
+            this.socket.send(data)
+          } catch (e) {
+            console.error("Error sending audio data to deepgram:", e)
+          }
         } else {
           console.log("client: socket not initialized, can't send audio data to deepgram")
         }
@@ -236,6 +240,9 @@ class ChatSTT extends BaseEl {
       this.userMedia = null
       this.isRecording = false
       this.requestUpdate()
+      setTimeout( () => {
+        this.initTTS()
+      }, 30)
     }, 50)
   }
 

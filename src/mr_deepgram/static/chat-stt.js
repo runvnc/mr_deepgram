@@ -110,6 +110,7 @@ class ChatSTT extends BaseEl {
     this.isInitialized = false
     this.initializing = false
     this.userMedia = null
+    this.fetchTempToken().then(key => { this.deepgramToken = key })
     this.microphone = null
     this.socket = null
     this.deepgram = null
@@ -238,9 +239,17 @@ class ChatSTT extends BaseEl {
     }, 150)
   }
 
+  async fetchTempToken() {
+    try {
+      const response = await fetch('/deepgram/tempkey')
+      const key = await response.text
+    } catch (e) {
+      console.error("Error fetching temp token:", e)
+    }
+  }
+
   async initSTT() {
     try {
-      const key = "a2dae355bff63649e396812508e25624420fc377" // TODO: Get from environment
       if (this.initializing) {
         console.log("Already initializing STT")
         return
@@ -256,7 +265,7 @@ class ChatSTT extends BaseEl {
           this.socket = undefined
           
           this.deepgram = undefined
-          this.deepgram = createClient(key)
+          this.deepgram = createClient(this.deepgramToken)
           console.log("client: created deepgram client")
           console.log("this is", this)
           console.log("this.name is ", this.name)

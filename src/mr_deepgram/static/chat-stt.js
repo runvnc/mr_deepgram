@@ -147,7 +147,7 @@ class ChatSTT extends BaseEl {
       }
       console.log("client: opening microphone")
       this.microphone = await this.getMicrophone()
-      await this.microphone.start(50)
+      await this.microphone.start(25)
 
       this.microphone.onstart = () => {
         console.log("client: microphone opened")
@@ -230,7 +230,7 @@ class ChatSTT extends BaseEl {
       setTimeout( () => {
         this.initSTT()
       }, 30)
-    }, 50)
+    }, 75)
   }
 
   async initSTT() {

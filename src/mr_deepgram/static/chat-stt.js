@@ -145,9 +145,6 @@ class ChatSTT extends BaseEl {
           console.warn("error closing microphone", e)
         }
       }
-      console.log("waiting for STT to initialize")
-      await this.initSTT()
-      console.log("STT initialized")
       console.log("client: opening microphone")
       this.microphone = await this.getMicrophone()
       await this.microphone.start(50)

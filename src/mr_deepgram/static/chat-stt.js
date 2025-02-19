@@ -114,9 +114,9 @@ class ChatSTT extends BaseEl {
     this.name = "chat-stt"
     this.keepAlive = null
     this.partialTranscript = ''
-    this.textInput = document.querySelector('chat-ai').shadowRoot
-                    .querySelector('chat-form')
-                    .shadowRoot.querySelectorAll('#inp_message')[0]
+    this.chatForm = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form')
+    this.textInput = this.chatForm.shadowRoot.querySelectorAll('#inp_message')[0]
+    this.sendButton = this.chatForm.shadowRoot.querySelectorAll('.send_msg')[0]
     console.log('textInput', this.textInput)
  
   }
@@ -192,15 +192,15 @@ class ChatSTT extends BaseEl {
     }
 
     try {
-      //console.log("deepgram: closing socket")
-      //this.socket.finish()
+      console.log("deepgram: closing socket")
+      this.socket.finish()
       //console.log("deepgram: socket closed")
-      //this.socket.removeAllListeners()
+      this.socket.removeAllListeners()
     } catch (e) {
       console.warn("Error closing socket")
     }
     try {
-      //this.deepgram = null;
+      this.deepgram = null;
     } catch (e) {
       console.warn("Error closing deepgram client")
     }
@@ -212,8 +212,7 @@ class ChatSTT extends BaseEl {
         this.partialTranscript = ""
         
         this.textInput.value = inputText
-        chatForm._send()
-        
+        this.chatForm._send()
       }
       this.transcript = ''
       this.partialTranscript = ''
@@ -238,9 +237,9 @@ class ChatSTT extends BaseEl {
     try {
       const key = "a2dae355bff63649e396812508e25624420fc377" // TODO: Get from environment
 
-      if (!this.socket || this.socket.getReadyState() != 1) {
+      if (true) { //!this.socket || this.socket.getReadyState() != 1) {
         try {
-          console.log("Deepgram not open/connected. Creating client")
+          console.log("Stopping any existing Deepgram connection")
           try {
             this.socket.removeAllListeners()
             this.socket.finish()

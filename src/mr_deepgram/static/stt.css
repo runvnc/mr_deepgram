@@ -143,6 +143,7 @@ section {
   align-content: stretch;
   margin-top: 20px;
   position: relative;
+  width: 100px;
 }
 
 section[role="group"] {

@@ -139,6 +139,7 @@ class ChatSTT extends BaseEl {
       if (this.microphone) {
         try {
           this.microphone.stop()
+          this.microphone.removeAllListeners()
           this.microphone = null
         } catch (e) {
           console.warn("error closing microphone", e)

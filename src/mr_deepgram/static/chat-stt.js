@@ -241,7 +241,7 @@ class ChatSTT extends BaseEl {
       this.isRecording = false
       this.requestUpdate()
       setTimeout( () => {
-        this.initTTS()
+        this.initSTT()
       }, 30)
     }, 50)
   }

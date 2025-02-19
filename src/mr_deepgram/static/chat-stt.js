@@ -107,6 +107,7 @@ class ChatSTT extends BaseEl {
     this.transcript = ''
     this.dontInterrupt = true
     this.isInitialized = false
+    this.initializing = false
     this.userMedia = null
     this.microphone = null
     this.socket = null
@@ -195,19 +196,6 @@ class ChatSTT extends BaseEl {
       console.warn("Error stopping microphone:", e)
     }
 
-    try {
-      console.log("deepgram: closing socket")
-      this.socket.finish()
-      //console.log("deepgram: socket closed")
-      this.socket.removeAllListeners()
-    } catch (e) {
-      console.warn("Error closing socket")
-    }
-    try {
-      this.deepgram = null;
-    } catch (e) {
-      console.warn("Error closing deepgram client")
-    }
     setTimeout(() => {
       if (this.partialTranscript != '' || this.transcript !== '') {
         console.log("Sending text to chat form")
@@ -238,6 +226,7 @@ class ChatSTT extends BaseEl {
       }
       
       this.userMedia = null
+      this.microphone = null
       this.isRecording = false
       this.requestUpdate()
       setTimeout( () => {
@@ -249,19 +238,21 @@ class ChatSTT extends BaseEl {
   async initSTT() {
     try {
       const key = "a2dae355bff63649e396812508e25624420fc377" // TODO: Get from environment
-
+      if (this.initializing) {
+        console.log("Already initializing STT")
+        return
+      }
       if (true) { //!this.socket || this.socket.getReadyState() != 1) {
         try {
           console.log("Stopping any existing Deepgram connection")
           try {
             this.socket.removeAllListeners()
-            this.socket.finish()
           } catch (e) {
              console.warn("error removing socket listeners", e)
           }
+          this.socket = undefined
           
-          this.deepgram = null
-          this.socket = null
+          this.deepgram = undefined
           this.deepgram = createClient(key)
           console.log("client: created deepgram client")
           console.log("this is", this)
@@ -304,16 +295,20 @@ class ChatSTT extends BaseEl {
             console.error("Deepgram socket error:", e)
             this.socket.removeAllListeners()
             setTimeout(() => {
-              this.initSTT()
+              if (!this.initializing) {
+                this.initSTT()
+              }
             }, 30)
           })
 
           this.socket.on("close", () => {
             console.log("Deepgram socket closed")
             this.socket.removeAllListeners()
-            /* setTimeout(() => {
-                this.initSTT()
-            }, 30) */
+            setTimeout(() => {
+                if (!this.initializing) {
+                  this.initSTT()
+                }
+            }, 30)
           })
 
         } catch (e) {
@@ -340,6 +335,8 @@ class ChatSTT extends BaseEl {
     } catch (e) {
       console.error('Error initializing STT:', e)
       this.isInitialized = false
+    } finally {
+      this.initializing = false
     }
   }
 

@@ -287,7 +287,7 @@ class ChatSTT extends BaseEl {
                   this.transcript = ""
                 }
               } else {
-                this.textInput.value = this.trascript + this.partialTranscript
+                this.textInput.value = this.transcript + this.partialTranscript
               }
             }
           })

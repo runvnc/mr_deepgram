@@ -340,7 +340,7 @@ class ChatSTT extends BaseEl {
 
   connectedCallback() {
     super.connectedCallback()
-    //this.initSTT()
+    this.initSTT()
   }
 
   disconnectedCallback() {

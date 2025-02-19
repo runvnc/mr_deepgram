@@ -279,13 +279,15 @@ class ChatSTT extends BaseEl {
 
               if (data.is_final) {
                 this.transcript += transcript_data + " "
-                this.textInput.value = transcript_data
+                this.textInput.value = this.transcript
 
                 this.partialTranscript = "" 
                 if (!this.dontInterrupt) {
                   this.chatForm._send()
                   this.transcript = ""
                 }
+              } else {
+                this.textInput.value = this.trascript + this.partialTranscript
               }
             }
           })

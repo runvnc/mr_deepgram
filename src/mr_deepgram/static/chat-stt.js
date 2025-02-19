@@ -235,7 +235,7 @@ class ChatSTT extends BaseEl {
       setTimeout( () => {
         this.initSTT()
       }, 30)
-    }, 100)
+    }, 150)
   }
 
   async initSTT() {

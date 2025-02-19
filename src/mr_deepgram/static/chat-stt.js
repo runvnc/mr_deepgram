@@ -105,7 +105,7 @@ class ChatSTT extends BaseEl {
     super()
     this.isRecording = false
     this.transcript = ''
-    this.dontInterrupt = false
+    this.dontInterrupt = true
     this.isInitialized = false
     this.userMedia = null
     this.microphone = null
@@ -206,13 +206,19 @@ class ChatSTT extends BaseEl {
     }
     setTimeout(() => {
       if (this.partialTranscript != '' || this.transcript !== '') {
+        console.log("Sending text to chat form")
         let inputText = this.transcript
         if (inputText == "") inputText = this.partialTranscript;
         this.transcript = ""
         this.partialTranscript = ""
         
         this.textInput.value = inputText
+        console.log("chatForm", this.chatForm)
+        console.log("sending text to system")
         this.chatForm._send()
+        console.log("text sent")
+      } else {
+        console.log("No text to send")
       }
       this.transcript = ''
       this.partialTranscript = ''

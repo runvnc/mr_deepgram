@@ -174,12 +174,15 @@ class ChatSTT extends BaseEl {
   async getMicrophone() {
     try {
       // Check if we have the new API
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      //if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
         this._debugLog("Using modern getUserMedia API");
         this.userMedia = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } 
-      // Fall back to older APIs
-      else {
+      } catch (error) {
+        console.warn("Error getting microphone access:", error);
+        this._debugLog(`Error getting microphone access with navigator.mediaDevices: ${error.name} - ${error.message}`);
+      }
+      if (!this.userMedia) {
         this._debugLog("Falling back to older getUserMedia API");
         const getUserMedia = navigator.getUserMedia || 
                            navigator.webkitGetUserMedia ||
@@ -189,13 +192,17 @@ class ChatSTT extends BaseEl {
         if (!getUserMedia) {
           throw new Error('getUserMedia is not supported in this browser');
         }
-        
-        this.userMedia = await new Promise((resolve, reject) => {
-          getUserMedia.call(navigator, { audio: true }, resolve, reject);
-        });
+        this.userMedia = await getUserMedia({ audio: true });
+        //this.userMedia = await new Promise((resolve, reject) => {
+        //  getUserMedia.call(navigator, { audio: true }, resolve, reject);
+        //});
       }
-      
-      this._debugLog("Got microphone access successfully");
+
+      if (this.userMedia) {
+        this._debugLog("Got microphone access successfully");
+      } else {
+        this._debugLog("Failed to get microphone access");
+      }
       return new MediaRecorder(this.userMedia);
     } catch (error) {
       this._debugLog(`Microphone error: ${error.name} - ${error.message}`);

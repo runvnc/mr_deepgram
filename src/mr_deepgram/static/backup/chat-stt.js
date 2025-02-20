@@ -4,7 +4,7 @@ const { createClient } = deepgram;
 
 class ChatSTT extends BaseEl {
   static properties = {
-    isRecording: { type: Boolean },
+    isRecording: { type: Boolean, reflect: true, attribute: 'recording' },
     transcript: { type: String },
     dontInterrupt: { type: Boolean },
     isInitialized: { type: Boolean }
@@ -22,6 +22,7 @@ class ChatSTT extends BaseEl {
       align-items: center;
       align-content: stretch;
       position: relative;
+      width: 100px;
     }
 
     .outline {
@@ -105,14 +106,23 @@ class ChatSTT extends BaseEl {
     super()
     this.isRecording = false
     this.transcript = ''
-    this.dontInterrupt = false
+    this.dontInterrupt = true
     this.isInitialized = false
+    this.deepgramToken = null
+    this.initializing = false
     this.userMedia = null
+    this.fetchTempToken().then(key => { this.deepgramToken = key })
     this.microphone = null
     this.socket = null
     this.deepgram = null
-    this.keepAlive = null
+    this.name = "chat-stt"
+    this.keepAlive = true
     this.partialTranscript = ''
+    this.chatForm = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form')
+    this.textInput = this.chatForm.shadowRoot.querySelectorAll('#inp_message')[0]
+    this.sendButton = this.chatForm.shadowRoot.querySelectorAll('.send_msg')[0]
+    console.log('textInput', this.textInput)
+ 
   }
 
   async getMicrophone() {
@@ -127,19 +137,24 @@ class ChatSTT extends BaseEl {
     this.transcript = ''
     this.isRecording = true
     this.requestUpdate()
-
+  
+    try {
+      window.shutUp()
+    } catch (e) {
+    }
     try {
       if (this.microphone) {
         try {
           this.microphone.stop()
+          this.microphone.removeAllListeners()
           this.microphone = null
         } catch (e) {
           console.warn("error closing microphone", e)
         }
       }
-      await this.initSTT()
+      console.log("client: opening microphone")
       this.microphone = await this.getMicrophone()
-      await this.microphone.start(50)
+      await this.microphone.start(25)
 
       this.microphone.onstart = () => {
         console.log("client: microphone opened")
@@ -158,7 +173,13 @@ class ChatSTT extends BaseEl {
         const data = e.data
         if (this.socket) {
           console.log("client: sending data to deepgram")
-          this.socket.send(data)
+          try {
+            this.socket.send(data)
+          } catch (e) {
+            console.error("Error sending audio data to deepgram:", e)
+          }
+        } else {
+          console.log("client: socket not initialized, can't send audio data to deepgram")
         }
       }
     } catch (e) {
@@ -180,32 +201,21 @@ class ChatSTT extends BaseEl {
       console.warn("Error stopping microphone:", e)
     }
 
-    try {
-      this.socket.finish()
-      this.socket.removeAllListeners()
-    } catch (e) {
-      console.warn("Error closing socket")
-    }
-    try {
-      this.deepgram = null;
-    } catch (e) {
-      console.warn("Error closing deepgram client")
-    }
     setTimeout(() => {
       if (this.partialTranscript != '' || this.transcript !== '') {
+        console.log("Sending text to chat form")
         let inputText = this.transcript
-        if (inputText == "") inputText = this.partialTranscript;
+        inputText += this.partialTranscript;
         this.transcript = ""
         this.partialTranscript = ""
- 
-        const chatForm = this.closest('chat-form')
-        if (chatForm) {
-          const input = chatForm.shadowRoot.querySelector('#inp_message')
-          if (input) {
-            input.value = inputText 
-            chatForm._send()
-          }
-        }
+        
+        this.textInput.value = inputText
+        console.log("chatForm", this.chatForm)
+        console.log("sending text to system")
+        this.chatForm._send()
+        console.log("text sent")
+      } else {
+        console.log("No text to send")
       }
       this.transcript = ''
       this.partialTranscript = ''
@@ -221,84 +231,112 @@ class ChatSTT extends BaseEl {
       }
       
       this.userMedia = null
+      this.microphone = null
       this.isRecording = false
       this.requestUpdate()
-    }, 50)
+      setTimeout( () => {
+        this.initSTT()
+      }, 30)
+    }, 150)
+  }
+
+  async fetchTempToken() {
+    try {
+      const response = await fetch('/deepgram/tempkey')
+      const key = await response.text()
+      console.log(key)
+      return key
+    } catch (e) {
+      console.error("Error fetching temp token:", e)
+    }
   }
 
   async initSTT() {
     try {
-      const key = "a2dae355bff63649e396812508e25624420fc377" // TODO: Get from environment
-
-      if (this.socket) {
+      if (this.initializing) {
+        console.log("Already initializing STT")
+        return
+      }
+      if (!this.deepgramToken) {
+        await this.fetchTempToken()
+      }
+      if (true) { //!this.socket || this.socket.getReadyState() != 1) {
         try {
-          this.socket.removeAllListeners()
+          console.log("Stopping any existing Deepgram connection")
+          try {
+            this.socket.removeAllListeners()
+          } catch (e) {
+             console.warn("error removing socket listeners", e)
+          }
+          this.socket = undefined
+          
+          this.deepgram = undefined
+          this.deepgram = createClient(this.deepgramToken)
+          console.log("client: created deepgram client")
+          console.log("this is", this)
+          console.log("this.name is ", this.name)
+          this.socket = this.deepgram.listen.live({
+            model: "nova-3",
+            smart_format: true,
+            interim_results: true,
+            punctuate: true,
+            numerals: true,
+            keyterm: ["Biolimitless", "Bio limitless"],
+            endpointing: 10
+          })
+          console.log({socket: this.socket})
+          this.socket.on("open", () => {
+            console.log("client: deepgram connected to websocket")
+          })
+
+          this.socket.on("Results", (data) => {
+            console.log("Deepgram Results:", data)
+            const transcript_data = data.channel.alternatives[0].transcript
+
+            if (transcript_data !== "") {
+              console.log("Transcript:", transcript_data)
+              this.partialTranscript = transcript_data
+
+              if (data.is_final) {
+                this.transcript += transcript_data + " "
+                this.textInput.value = this.transcript
+
+                this.partialTranscript = "" 
+                if (!this.dontInterrupt) {
+                  this.chatForm._send()
+                  this.transcript = ""
+                }
+              } else {
+                this.textInput.value = this.transcript + this.partialTranscript
+              }
+            }
+          })
+
+          this.socket.on("error", (e) => {
+            console.error("Deepgram socket error:", e)
+            this.socket.removeAllListeners()
+            setTimeout(() => {
+              if (!this.initializing) {
+                this.initSTT()
+              }
+            }, 30)
+          })
+
+          this.socket.on("close", () => {
+            console.log("Deepgram socket closed")
+            this.socket.removeAllListeners()
+            setTimeout(() => {
+                if (!this.initializing) {
+                  this.initSTT()
+                }
+            }, 30)
+          })
+
         } catch (e) {
           console.warn("error removing socket listeners", e)
         }
-        this.socket = undefined
       }
-
-      this.deepgram = createClient(key)
-      console.log("client: created deepgram client")
-
-      this.socket = this.deepgram.listen.live({
-        model: "nova-3",
-        smart_format: true,
-        interim_results: true,
-        punctuate: true,
-        numerals: true,
-        //keyterm: ["Biolimitless", "Bio limitless"],
-        endpointing: 10
-      })
-      
-      this.socket.on("open", () => {
-        console.log("client: deepgram connected to websocket")
-      })
-
-      this.socket.on("Results", (data) => {
-        console.log("Deepgram Results:", data)
-        const transcript_data = data.channel.alternatives[0].transcript
-
-        if (transcript_data !== "") {
-          const chatForm = this.closest('chat-form')
-          if (chatForm) {
-            const input = chatForm.shadowRoot.querySelector('#inp_message')
-            if (input) {
-              input.value = transcript_data
-            }
-          }
-
-          if (data.is_final) {
-            this.transcript += transcript_data + " "
-            
-            if (!this.dontInterrupt) {
-              const chatForm = this.closest('chat-form')
-              if (chatForm) {
-                chatForm._send()
-              }
-              this.transcript = ""
-            }
-          }
-        }
-      })
-
-      this.socket.on("error", (e) => {
-        console.error("Deepgram socket error:", e)
-        this.socket.removeAllListeners()
-        setTimeout(() => {
-          this.initSTT()
-        }, 30)
-      })
-
-      this.socket.on("close", () => {
-        console.log("Deepgram socket closed")
-        this.socket.removeAllListeners()
-        /* setTimeout(() => {
-            this.initSTT()
-        }, 30) */
-      })
-
+ 
       if (this.keepAlive) {
         clearInterval(this.keepAlive)
       }
@@ -318,12 +356,14 @@ class ChatSTT extends BaseEl {
     } catch (e) {
       console.error('Error initializing STT:', e)
       this.isInitialized = false
+    } finally {
+      this.initializing = false
     }
   }
 
   connectedCallback() {
     super.connectedCallback()
-    //this.initSTT()
+    this.initSTT()
   }
 
   disconnectedCallback() {

@@ -15,6 +15,27 @@ class ChatSTT extends BaseEl {
       display: block;
     }
 
+    #debug-overlay {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 9999;
+      max-width: 80%;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .debug-line {
+      margin: 2px 0;
+      white-space: pre-wrap;
+    }
+
     .object {
       display: flex;
       flex: 0 1 100%;
@@ -102,6 +123,25 @@ class ChatSTT extends BaseEl {
     }
   `
 
+  _debugLog(msg) {
+    const overlay = this.shadowRoot.getElementById('debug-overlay');
+    if (!overlay) return;
+    
+    const line = document.createElement('div');
+    line.className = 'debug-line';
+    line.textContent = `${new Date().toLocaleTimeString()}: ${msg}`;
+    
+    overlay.insertBefore(line, overlay.firstChild);
+    
+    // Keep only last 10 messages
+    while (overlay.children.length > 10) {
+      overlay.removeChild(overlay.lastChild);
+    }
+    
+    // Auto-clear after 5 seconds
+    setTimeout(() => line.remove(), 5000);
+  }
+
   constructor() {
     super()
     this.isRecording = false
@@ -133,8 +173,9 @@ class ChatSTT extends BaseEl {
   }
 
   async openMicrophone() {
-    console.log('---- openMicrophone ----')
+    this._debugLog('Opening microphone...')
     this.transcript = ''
+    this.partialTranscript = ''
     this.isRecording = true
     this.requestUpdate()
   
@@ -152,10 +193,10 @@ class ChatSTT extends BaseEl {
           console.warn("error closing microphone", e)
         }
       }
-      console.log("client: opening microphone")
+      this._debugLog("Getting microphone access...")
       this.microphone = await this.getMicrophone()
       await this.microphone.start(25)
-
+      
       this.microphone.onstart = () => {
         console.log("client: microphone opened")
         this.isRecording = true
@@ -163,7 +204,7 @@ class ChatSTT extends BaseEl {
       }
 
       this.microphone.onstop = () => {
-        console.log("client: microphone closed")
+        this._debugLog("Microphone closed")
         this.isRecording = false
         this.requestUpdate()
         this.microphone = null
@@ -172,7 +213,7 @@ class ChatSTT extends BaseEl {
       this.microphone.ondataavailable = (e) => {
         const data = e.data
         if (this.socket) {
-          console.log("client: sending data to deepgram")
+          this._debugLog("Sending audio data...")
           try {
             this.socket.send(data)
           } catch (e) {
@@ -184,7 +225,8 @@ class ChatSTT extends BaseEl {
       }
     } catch (e) {
       console.error("Error opening microphone:", e)
-      this.isRecording = false
+      this._debugLog(`Error: ${e.message}`)
+      this.isRecording = false 
       this.requestUpdate()
     }
   }
@@ -192,6 +234,7 @@ class ChatSTT extends BaseEl {
   async closeMicrophone() {
     console.log('---- closeMicrophone ----')
     if (!this.microphone) {
+      this._debugLog("No active microphone to close")
       return
     }
 
@@ -204,7 +247,7 @@ class ChatSTT extends BaseEl {
     setTimeout(() => {
       if (this.partialTranscript != '' || this.transcript !== '') {
         console.log("Sending text to chat form")
-        let inputText = this.transcript
+        let inputText = this.transcript || ''
         inputText += this.partialTranscript;
         this.transcript = ""
         this.partialTranscript = ""
@@ -215,7 +258,7 @@ class ChatSTT extends BaseEl {
         this.chatForm._send()
         console.log("text sent")
       } else {
-        console.log("No text to send")
+        this._debugLog("No text to send")
       }
       this.transcript = ''
       this.partialTranscript = ''
@@ -242,6 +285,7 @@ class ChatSTT extends BaseEl {
 
   async fetchTempToken() {
     try {
+      this._debugLog("Fetching Deepgram token...")
       const response = await fetch('/deepgram/tempkey')
       const key = await response.text()
       console.log(key)
@@ -254,6 +298,7 @@ class ChatSTT extends BaseEl {
   async initSTT() {
     try {
       if (this.initializing) {
+        this._debugLog("STT already initializing...")
         console.log("Already initializing STT")
         return
       }
@@ -262,7 +307,7 @@ class ChatSTT extends BaseEl {
       }
       if (true) { //!this.socket || this.socket.getReadyState() != 1) {
         try {
-          console.log("Stopping any existing Deepgram connection")
+          this._debugLog("Initializing Deepgram connection...")
           try {
             this.socket.removeAllListeners()
           } catch (e) {
@@ -295,6 +340,7 @@ class ChatSTT extends BaseEl {
 
             if (transcript_data !== "") {
               console.log("Transcript:", transcript_data)
+              this._debugLog(`Transcript: ${transcript_data}`)
               this.partialTranscript = transcript_data
 
               if (data.is_final) {
@@ -314,6 +360,7 @@ class ChatSTT extends BaseEl {
 
           this.socket.on("error", (e) => {
             console.error("Deepgram socket error:", e)
+            this._debugLog(`Socket error: ${e.message}`)
             this.socket.removeAllListeners()
             setTimeout(() => {
               if (!this.initializing) {
@@ -324,6 +371,7 @@ class ChatSTT extends BaseEl {
 
           this.socket.on("close", () => {
             console.log("Deepgram socket closed")
+            this._debugLog("Deepgram connection closed")
             this.socket.removeAllListeners()
             setTimeout(() => {
                 if (!this.initializing) {
@@ -363,6 +411,7 @@ class ChatSTT extends BaseEl {
 
   connectedCallback() {
     super.connectedCallback()
+    this._debugLog("Component connected")
     this.initSTT()
   }
 
@@ -394,13 +443,33 @@ class ChatSTT extends BaseEl {
 
   render() {
     return html`
-      <div class="object" id="record"
-           @mousedown=${this.openMicrophone}
-           @touchstart=${this.openMicrophone}
-           @mouseup=${this.closeMicrophone}
-           @mouseleave=${this.closeMicrophone}
-           @touchend=${this.closeMicrophone}
-           @touchcancel=${this.closeMicrophone}>
+      <div id="debug-overlay"></div>
+      <div class="object" id="record" 
+           @mousedown=${(e) => {
+             this._debugLog('mousedown event');
+             if (!e.touches) { // Only handle if not touch device
+               this.openMicrophone();
+             }
+           }}
+           @touchstart=${(e) => {
+             e.preventDefault(); // Prevent mouse events from firing
+             this._debugLog('touchstart event');
+             this.openMicrophone();
+           }}
+           @mouseup=${(e) => {
+             this._debugLog('mouseup event');
+             if (!e.touches) this.closeMicrophone();
+           }}
+           @touchend=${(e) => {
+             e.preventDefault();
+             this._debugLog('touchend event');
+             this.closeMicrophone();
+           }}
+           @touchcancel=${(e) => {
+             e.preventDefault();
+             this._debugLog('touchcancel event');
+             this.closeMicrophone();
+           }}>
         <div class="outline"></div>
         <div class="outline" id="delayed"></div>
         <div class="button"></div>

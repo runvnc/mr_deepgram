@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from lib.templates import render
 from loguru import logger
 from dotenv import load_dotenv
+import os
 load_dotenv(override=True)
 
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY")

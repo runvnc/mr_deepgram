@@ -176,14 +176,15 @@ class ChatSTT extends BaseEl {
       // Check if we have the new API
       //if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
-        this._debugLog("Using modern getUserMedia API");
         this.userMedia = await navigator.mediaDevices.getUserMedia({ audio: true });
       } catch (error) {
         console.warn("Error getting microphone access:", error);
         this._debugLog(`Error getting microphone access with navigator.mediaDevices: ${error.name} - ${error.message}`);
+        this._debugLog("navigator.mediaDevices is: ", JSON.stringify(navgiator.mediaDevices))
       }
       if (!this.userMedia) {
         this._debugLog("Falling back to older getUserMedia API");
+        this._debugLog("navigator.getUserMedia is: ", JSON.stringify(navigator.getUserMedia))
         const getUserMedia = navigator.getUserMedia || 
                            navigator.webkitGetUserMedia ||
                            navigator.mozGetUserMedia ||

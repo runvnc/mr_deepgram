@@ -17,9 +17,9 @@ class ChatSTT extends BaseEl {
 
     #debug-overlay {
       position: fixed;
-      top: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.8);
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 0, 0, 0.9);
       color: white;
       padding: 10px;
       border-radius: 5px;
@@ -29,6 +29,8 @@ class ChatSTT extends BaseEl {
       overflow-y: auto;
       font-family: monospace;
       font-size: 12px;
+      pointer-events: none;
+      text-shadow: 1px 1px 2px black;
     }
 
     .debug-line {
@@ -126,6 +128,7 @@ class ChatSTT extends BaseEl {
   _debugLog(msg) {
     const overlay = this.shadowRoot.getElementById('debug-overlay');
     if (!overlay) return;
+    console.log('Debug:', msg); // Backup console log
     
     const line = document.createElement('div');
     line.className = 'debug-line';
@@ -443,7 +446,7 @@ class ChatSTT extends BaseEl {
 
   render() {
     return html`
-      <div id="debug-overlay"></div>
+      <div id="debug-overlay">DEBUG READY</div>
       <div class="object" id="record" 
            @mousedown=${(e) => {
              this._debugLog('mousedown event');

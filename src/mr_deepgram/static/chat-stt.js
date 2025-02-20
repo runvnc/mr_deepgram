@@ -169,10 +169,35 @@ class ChatSTT extends BaseEl {
   }
 
   async getMicrophone() {
-    this.userMedia = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    })
-    return new MediaRecorder(this.userMedia)
+    try {
+      // Check if we have the new API
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        this._debugLog("Using modern getUserMedia API");
+        this.userMedia = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } 
+      // Fall back to older APIs
+      else {
+        this._debugLog("Falling back to older getUserMedia API");
+        const getUserMedia = navigator.getUserMedia || 
+                           navigator.webkitGetUserMedia ||
+                           navigator.mozGetUserMedia ||
+                           navigator.msGetUserMedia;
+        
+        if (!getUserMedia) {
+          throw new Error('getUserMedia is not supported in this browser');
+        }
+        
+        this.userMedia = await new Promise((resolve, reject) => {
+          getUserMedia.call(navigator, { audio: true }, resolve, reject);
+        });
+      }
+      
+      this._debugLog("Got microphone access successfully");
+      return new MediaRecorder(this.userMedia);
+    } catch (error) {
+      this._debugLog(`Microphone error: ${error.name} - ${error.message}`);
+      throw error;
+    }
   }
 
   async openMicrophone() {

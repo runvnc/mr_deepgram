@@ -491,7 +491,7 @@ class ChatSTT extends BaseEl {
 
   render() {
     return html`
-      <div id="debug-overlay">DEBUG READY</div>
+      <!-- <div id="debug-overlay">DEBUG READY</div> -->
       <div class="object" id="record" 
            @mousedown=${(e) => {
              this._debugLog('mousedown event');

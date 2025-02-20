@@ -108,6 +108,7 @@ class ChatSTT extends BaseEl {
     this.transcript = ''
     this.dontInterrupt = true
     this.isInitialized = false
+    this.deepgramToken = null
     this.initializing = false
     this.userMedia = null
     this.fetchTempToken().then(key => { this.deepgramToken = key })
@@ -242,7 +243,9 @@ class ChatSTT extends BaseEl {
   async fetchTempToken() {
     try {
       const response = await fetch('/deepgram/tempkey')
-      const key = await response.text
+      const key = await response.text()
+      console.log(key)
+      return key
     } catch (e) {
       console.error("Error fetching temp token:", e)
     }
@@ -254,6 +257,10 @@ class ChatSTT extends BaseEl {
         console.log("Already initializing STT")
         return
       }
+      if (!this.deepgramToken) {
+        await this.fetchTempToken()
+      }
+            }
       if (true) { //!this.socket || this.socket.getReadyState() != 1) {
         try {
           console.log("Stopping any existing Deepgram connection")

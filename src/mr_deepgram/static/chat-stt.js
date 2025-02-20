@@ -213,6 +213,10 @@ class ChatSTT extends BaseEl {
 
   async openMicrophone() {
     this._debugLog('Opening microphone...')
+    try {
+      this.textInput.setAttribute('readonly', true)
+    } catch (e) {}
+
     this.transcript = ''
     this.partialTranscript = ''
     this.isRecording = true
@@ -272,6 +276,10 @@ class ChatSTT extends BaseEl {
 
   async closeMicrophone() {
     console.log('---- closeMicrophone ----')
+    try {
+      this.textInput.removeAttribute('readonly')
+    } catch (e) {
+    }
     if (!this.microphone) {
       this._debugLog("No active microphone to close")
       return

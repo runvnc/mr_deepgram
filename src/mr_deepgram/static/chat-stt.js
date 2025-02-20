@@ -260,7 +260,6 @@ class ChatSTT extends BaseEl {
       if (!this.deepgramToken) {
         await this.fetchTempToken()
       }
-            }
       if (true) { //!this.socket || this.socket.getReadyState() != 1) {
         try {
           console.log("Stopping any existing Deepgram connection")

@@ -127,9 +127,10 @@ class ChatSTT extends BaseEl {
 
   _debugLog(msg) {
     try {
-      const overlay = this.shadowRoot.getElementById('debug-overlay');
+      //const overlay = this.shadowRoot.getElementById('debug-overlay');
       //if (!overlay) return;
       console.log('Debug:', msg); // Backup console log
+      return
       const line = document.createElement('div');
       line.className = 'debug-line';
       line.textContent = `${new Date().toLocaleTimeString()}: ${msg}`;

@@ -180,7 +180,7 @@ class ChatSTT extends BaseEl {
       } catch (error) {
         console.warn("Error getting microphone access:", error);
         this._debugLog(`Error getting microphone access with navigator.mediaDevices: ${error.name} - ${error.message}`);
-        this._debugLog("navigator.mediaDevices is: ", JSON.stringify(navgiator.mediaDevices))
+        this._debugLog("navigator.mediaDevices is: ", JSON.stringify(navigator.mediaDevices))
       }
       if (!this.userMedia) {
         this._debugLog("Falling back to older getUserMedia API");

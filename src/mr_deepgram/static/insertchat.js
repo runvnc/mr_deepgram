@@ -10,7 +10,20 @@ export function insertChatSTT() {
         // Create and insert the ChatSTT component
         const chatSTT = document.createElement('chat-tts')
         leftInsert.appendChild(chatSTT)
+        leftInsert.style.display = "block"
+        leftInsert.style.width = "50px"
+        leftInsert.style.height = "50px"
+        leftInsert.style.marginLeft = "auto"
+        leftInsert.style.marginRight = "auto"
+        leftInsert.style.marginBottm = "50px"
     }
+    const uploadContainer = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form').shadowRoot.querySelectorAll('.upload-container')[0]
+    if (!uploadContainer) {
+      console.log("Could not find uploadContainer")
+    } else {
+      upoadContainer.style.display = "none"
+    }
+  }
 }
 
 // Add listener to initialize STT when page loads

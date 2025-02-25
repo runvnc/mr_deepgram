@@ -23,7 +23,6 @@ export function insertChatSTT() {
     } else {
       upoadContainer.style.display = "none"
     }
-  }
 }
 
 // Add listener to initialize STT when page loads

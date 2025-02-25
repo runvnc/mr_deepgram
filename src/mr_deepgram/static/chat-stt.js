@@ -334,7 +334,7 @@ class ChatSTT extends BaseEl {
   async fetchTempToken() {
     try {
       this._debugLog("Fetching Deepgram token...")
-      const response = await fetch('/deepgram/tempkey')
+      const response = await authenticatedFetch('/deepgram/tempkey')
       const key = await response.text()
       console.log(key)
       return key

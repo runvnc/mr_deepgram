@@ -10,9 +10,6 @@ export function insertChatSTT() {
         // Create and insert the ChatSTT component
         const chatSTT = document.createElement('chat-tts')
         leftInsert.appendChild(chatSTT)
-        leftInsert.style.display = 'flex'
-        leftInsert.style.alignItems = 'center'
-        leftInsert.style.marginRight = '10px'
     }
 }
 

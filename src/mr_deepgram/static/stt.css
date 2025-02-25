@@ -240,4 +240,12 @@ section[role="group"] {
   margin: 21px;
 }
 
+#chat-insert-top {
+  width: 50px;
+  display: block;
+  height: 50px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 

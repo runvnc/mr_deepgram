@@ -4,9 +4,9 @@
 export function insertChatSTT() {
     console.log("Inserting STT")
     // Find the chat-right-insert div in any ChatForm instances
-    const leftInsert = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form').shadowRoot.querySelectorAll('#chat-insert-left')[0]
+    const leftInsert = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form').shadowRoot.querySelectorAll('#chat-insert-top')[0]
     if (leftInsert) {
-        console.log("Found chat-insert-left")
+        console.log("Found chat-insert-top")
         // Create and insert the ChatSTT component
         const chatSTT = document.createElement('chat-tts')
         leftInsert.appendChild(chatSTT)

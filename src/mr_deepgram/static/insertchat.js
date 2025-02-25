@@ -3,21 +3,23 @@
 // Function to dynamically insert the ChatSTT component into ChatForm
 export function insertChatSTT() {
     console.log("Inserting STT")
-    // Find the chat-right-insert div in any ChatForm instances
-    const leftInsert = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form').shadowRoot.querySelectorAll('#chat-insert-top')[0]
-    if (leftInsert) {
+    const chatForm = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form')
+    const topInsert = chatForm.shadowRoot.querySelectorAll('#chat-insert-top')[0]
+    chatForm.style.display = "block"
+    console.log("ok 1")
+    if (topInsert) {
         console.log("Found chat-insert-top")
         // Create and insert the ChatSTT component
         const chatSTT = document.createElement('chat-tts')
-        leftInsert.appendChild(chatSTT)
-        leftInsert.style.display = "block"
-        leftInsert.style.width = "50px"
-        leftInsert.style.height = "50px"
-        leftInsert.style.marginLeft = "auto"
-        leftInsert.style.marginRight = "auto"
-        leftInsert.style.marginBottm = "50px"
+        topInsert.appendChild(chatSTT)
+        topInsert.style.display = "block"
+        topInsert.style.width = "50px"
+        topInsert.style.height = "50px"
+        topInsert.style.marginLeft = "auto"
+        topInsert.style.marginRight = "auto"
+        topInsert.style.marginBottm = "50px"
     }
-    const uploadContainer = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form').shadowRoot.querySelectorAll('.upload-container')[0]
+    const uploadContainer = chatForm.shadowRoot.querySelectorAll('.upload-container')[0]
     if (!uploadContainer) {
       console.log("Could not find uploadContainer")
     } else {

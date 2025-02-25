@@ -21,7 +21,7 @@ export function insertChatSTT() {
     if (!uploadContainer) {
       console.log("Could not find uploadContainer")
     } else {
-      upoadContainer.style.display = "none"
+      uploadContainer.style.display = "none"
     }
 }
 

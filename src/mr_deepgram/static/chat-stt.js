@@ -121,7 +121,7 @@ class ChatSTT extends BaseEl {
     .mic-icon {
       height: 30px;
       position: absolute;
-      margin: 10px;
+      margin: 2px;
     }
   `
 

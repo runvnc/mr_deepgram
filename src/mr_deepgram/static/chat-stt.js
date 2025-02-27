@@ -34,7 +34,7 @@ class ChatSTT extends BaseEl {
     }
 
     .debug-line {
-      margin: 2px 0;
+      margin: 10px;
       white-space: pre-wrap;
     }
 
@@ -45,7 +45,7 @@ class ChatSTT extends BaseEl {
       align-items: center;
       align-content: stretch;
       position: relative;
-      width: 50px;
+      width: 30px;
       z-index: 100;
     }
 

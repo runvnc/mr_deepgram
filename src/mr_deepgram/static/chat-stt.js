@@ -46,7 +46,6 @@ class ChatSTT extends BaseEl {
       align-content: stretch;
       position: relative;
       width: 50px;
-      z-index: 100;
     }
 
     .outline {
@@ -122,7 +121,7 @@ class ChatSTT extends BaseEl {
     .mic-icon {
       height: 30px;
       position: absolute;
-      margin: 2px;
+      margin: 10px;
     }
   `
 

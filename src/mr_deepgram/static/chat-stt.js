@@ -46,6 +46,7 @@ class ChatSTT extends BaseEl {
       align-content: stretch;
       position: relative;
       width: 50px;
+      z-index: 100;
     }
 
     .outline {

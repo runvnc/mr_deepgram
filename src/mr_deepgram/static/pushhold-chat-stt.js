@@ -7,8 +7,7 @@ class ChatSTT extends BaseEl {
     isRecording: { type: Boolean, reflect: true, attribute: 'recording' },
     transcript: { type: String },
     dontInterrupt: { type: Boolean },
-    isInitialized: { type: Boolean },
-    toggleMode: { type: Boolean, attribute: 'toggle-mode' }
+    isInitialized: { type: Boolean }
   }
 
   static styles = css`
@@ -159,7 +158,6 @@ class ChatSTT extends BaseEl {
     this.transcript = ''
     this.dontInterrupt = true
     this.isInitialized = false
-    this.toggleMode = false
     this.deepgramToken = null
     this.initializing = false
     this.userMedia = null
@@ -497,42 +495,28 @@ class ChatSTT extends BaseEl {
   render() {
     return html`
       <!-- <div id="debug-overlay">DEBUG READY</div> -->
-      <div class="object" id="record"
+      <div class="object" id="record" 
            @mousedown=${(e) => {
-             if (this.toggleMode) return; // Ignore in toggle mode
              this._debugLog('mousedown event');
              if (!e.touches) { // Only handle if not touch device
                this.openMicrophone();
              }
            }}
-           @mouseup=${(e) => {
-             if (this.toggleMode) return; // Ignore in toggle mode
-             this._debugLog('mouseup event');
-             if (!e.touches) this.closeMicrophone();
-           }}
-           @click=${(e) => {
-             if (!this.toggleMode) return; // Only handle in toggle mode
-             this._debugLog('click event (toggle mode)');
-             if (this.isRecording) {
-               this.closeMicrophone();
-             } else {
-               this.openMicrophone();
-             }
-           }}
            @touchstart=${(e) => {
-             if (this.toggleMode) return; // Ignore in toggle mode, use tap instead
              e.preventDefault(); // Prevent mouse events from firing
              this._debugLog('touchstart event');
              this.openMicrophone();
            }}
+           @mouseup=${(e) => {
+             this._debugLog('mouseup event');
+             if (!e.touches) this.closeMicrophone();
+           }}
            @touchend=${(e) => {
-             if (this.toggleMode) return; // Ignore in toggle mode
              e.preventDefault();
              this._debugLog('touchend event');
              this.closeMicrophone();
            }}
            @touchcancel=${(e) => {
-             if (this.toggleMode) return; // Ignore in toggle mode
              e.preventDefault();
              this._debugLog('touchcancel event');
              this.closeMicrophone();

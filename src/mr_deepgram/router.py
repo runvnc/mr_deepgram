@@ -35,3 +35,13 @@ async def get_tempkey(request: Request):
     print(data)
     return data["key"]
 
+@router.get("/deepgram/toggle-mode", response_class=JSONResponse)
+async def get_toggle_mode(request: Request):
+    """Check if toggle mode is enabled via environment variable."""
+    toggle_mode_env = os.getenv("DEEPGRAM_TOGGLE_MODE", "").lower()
+    # Check for common truthy values
+    is_enabled = toggle_mode_env in ['true', 'yes', 'on', '1']
+    return {
+        "enabled": is_enabled
+    }
++

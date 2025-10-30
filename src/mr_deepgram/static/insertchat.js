@@ -1,8 +1,22 @@
 
 
 // Function to dynamically insert the ChatSTT component into ChatForm
-export function insertChatSTT() {
+export async function insertChatSTT() {
     console.log("Inserting STT")
+    
+    // Fetch toggle mode setting from server
+    let toggleMode = false
+    try {
+        const response = await fetch('/deepgram/toggle-mode')
+        if (response.ok) {
+            const data = await response.json()
+            toggleMode = data.enabled
+            console.log('Toggle mode enabled:', toggleMode)
+        }
+    } catch (error) {
+        console.warn('Could not fetch toggle mode setting:', error)
+    }
+    
     const chatForm = document.querySelector('chat-ai').shadowRoot.querySelector('chat-form')
     const topInsert = chatForm.shadowRoot.querySelectorAll('#chat-insert-top')[0]
     chatForm.style.display = "block"
@@ -11,6 +25,12 @@ export function insertChatSTT() {
         console.log("Found chat-insert-top")
         // Create and insert the ChatSTT component
         const chatSTT = document.createElement('chat-tts')
+        
+        // Apply toggle mode if enabled
+        if (toggleMode) {
+            chatSTT.setAttribute('toggle-mode', '')
+        }
+        
         topInsert.appendChild(chatSTT)
         topInsert.style.display = "block"
         topInsert.style.width = "50px"

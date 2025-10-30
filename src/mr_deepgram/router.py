@@ -44,4 +44,3 @@ async def get_toggle_mode(request: Request):
     return {
         "enabled": is_enabled
     }
-+

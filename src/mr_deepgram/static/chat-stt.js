@@ -377,10 +377,11 @@ class ChatSTT extends BaseEl {
             model: "nova-3",
             smart_format: true,
             interim_results: true,
+            utterance_end_ms: 700,
             punctuate: true,
             numerals: true,
             keyterm: ["Biolimitless", "Bio limitless"],
-            endpointing: 10
+            endpointing: 400
           })
           console.log({socket: this.socket})
           this.socket.on("open", () => {

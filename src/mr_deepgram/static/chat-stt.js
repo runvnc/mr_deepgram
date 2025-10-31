@@ -390,7 +390,7 @@ class ChatSTT extends BaseEl {
           this.socket.on("Results", (data) => {
             console.log("Deepgram Results:", data)
             const transcript_data = data.channel.alternatives[0].transcript
-
+            window.shutUp()
             if (transcript_data !== "") {
               console.log("Transcript:", transcript_data)
               this._debugLog(`Transcript: ${transcript_data}`)

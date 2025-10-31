@@ -380,8 +380,8 @@ class ChatSTT extends BaseEl {
             utterance_end_ms: 700,
             punctuate: true,
             numerals: true,
-            keyterm: ["Biolimitless", "Bio limitless"],
-            endpointing: 400
+            keyterm: ["Biolimitless", "Bio limitless"]
+            //endpointing: 400
           })
           console.log({socket: this.socket})
           this.socket.on("open", () => {

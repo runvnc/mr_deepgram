@@ -159,7 +159,7 @@ class ChatSTT extends BaseEl {
     this.transcript = ''
     this.dontInterrupt = true
     this.isInitialized = false
-    this.toggleMode = false
+    this.toggleMode = true
     this.deepgramToken = null
     this.initializing = false
     this.userMedia = null
@@ -381,7 +381,7 @@ class ChatSTT extends BaseEl {
             punctuate: true,
             numerals: true,
             keyterm: ["Biolimitless", "Bio limitless"],
-            endpointing: 250
+            endpointing: 350
           })
           console.log({socket: this.socket})
           this.socket.on("open", () => {

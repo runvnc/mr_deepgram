@@ -163,6 +163,8 @@ class ChatSTT extends BaseEl {
     this.deepgramToken = null
     this.initializing = false
     this.userMedia = null
+    this.pressActive = false
+
     this.fetchTempToken().then(key => { this.deepgramToken = key })
     this.microphone = null
     this.socket = null
@@ -174,6 +176,24 @@ class ChatSTT extends BaseEl {
     this.textInput = this.chatForm.shadowRoot.querySelectorAll('#inp_message')[0]
     this.sendButton = this.chatForm.shadowRoot.querySelectorAll('.send_msg')[0]
     console.log('textInput', this.textInput)
+
+    // Global release handlers to ensure we close the mic even if the user
+    // releases the press outside the button (common cause of stuck state)
+    this._onWindowMouseUp = (e) => {
+      this._debugLog('window mouseup event')
+      if (this.pressActive) {
+        this.pressActive = false
+        this.closeMicrophone()
+      }
+    }
+
+    this._onWindowTouchEnd = (e) => {
+      this._debugLog('window touchend event')
+      if (this.pressActive) {
+        this.pressActive = false
+        this.closeMicrophone()
+      }
+    }
  
   }
 
@@ -219,14 +239,20 @@ class ChatSTT extends BaseEl {
 
   async openMicrophone() {
     this._debugLog('Opening microphone...')
+
+    // If the button is not actually pressed anymore, abort early
+    if (!this.pressActive) {
+      this._debugLog('openMicrophone called but pressActive is false; aborting.')
+      return
+    }
+
     try {
       this.textInput.setAttribute('readonly', true)
     } catch (e) {}
 
     this.transcript = ''
     this.partialTranscript = ''
-    this.isRecording = true
-    this.requestUpdate()
+
   
     try {
       window.shutUp()
@@ -243,7 +269,28 @@ class ChatSTT extends BaseEl {
         }
       }
       this._debugLog("Getting microphone access...")
-      this.microphone = await this.getMicrophone()
+      const mic = await this.getMicrophone()
+
+      // After getting microphone access, user may have already released the button
+      if (!this.pressActive) {
+        this._debugLog("Press released before microphone ready; cleaning up.")
+        try {
+          if (this.userMedia) {
+            this.userMedia.getTracks().forEach((track) => {
+              track.stop()
+            })
+          }
+        } catch (e) {
+          console.warn("Error stopping media tracks after cancelled open:", e)
+        }
+        this.userMedia = null
+        this.microphone = null
+        this.isRecording = false
+        this.requestUpdate()
+        return
+      }
+
+      this.microphone = mic
       await this.microphone.start(25)
       
       this.microphone.onstart = () => {
@@ -470,6 +517,13 @@ class ChatSTT extends BaseEl {
     super.connectedCallback()
     this._debugLog("Component connected")
     this.initSTT()
+
+    // Attach global listeners to catch releases that happen off the button
+    if (typeof window !== 'undefined') {
+      window.addEventListener('mouseup', this._onWindowMouseUp)
+      window.addEventListener('touchend', this._onWindowTouchEnd)
+      window.addEventListener('touchcancel', this._onWindowTouchEnd)
+    }
   }
 
   disconnectedCallback() {
@@ -496,6 +550,13 @@ class ChatSTT extends BaseEl {
         this.userMedia.getTracks().forEach(track => track.stop())
       } catch (e) {}
     }
+
+    // Remove global listeners
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('mouseup', this._onWindowMouseUp)
+      window.removeEventListener('touchend', this._onWindowTouchEnd)
+      window.removeEventListener('touchcancel', this._onWindowTouchEnd)
+    }
   }
 
   render() {
@@ -504,15 +565,17 @@ class ChatSTT extends BaseEl {
       <div class="object" id="record"
            @mousedown=${(e) => {
              //if (false) this.toggleMode) return; // Ignore in toggle mode
-             this._debugLog('mousedown event');
+             this._debugLog('mousedown event')
              if (!e.touches) { // Only handle if not touch device
-               this.openMicrophone();
+               this.pressActive = true
+               this.openMicrophone()
              }
            }}
            @mouseup=${(e) => {
              //if (this.toggleMode) return; // Ignore in toggle mode
-             this._debugLog('mouseup event');
-             if (!e.touches) this.closeMicrophone();
+             this._debugLog('mouseup event')
+             this.pressActive = false
+             if (!e.touches) this.closeMicrophone()
            }}
            @click=${(e) => {
              // Toggle mode is disabled for now; ignore click to avoid conflicts
@@ -526,20 +589,23 @@ class ChatSTT extends BaseEl {
            @touchstart=${(e) => {
              //if (this.toggleMode) return; // Ignore in toggle mode, use tap instead
              e.preventDefault(); // Prevent mouse events from firing
-             this._debugLog('touchstart event');
-             this.openMicrophone();
+             this._debugLog('touchstart event')
+             this.pressActive = true
+             this.openMicrophone()
            }}
            @touchend=${(e) => {
              //if (this.toggleMode) return; // Ignore in toggle mode
              e.preventDefault();
-             this._debugLog('touchend event');
-             this.closeMicrophone();
+             this._debugLog('touchend event')
+             this.pressActive = false
+             this.closeMicrophone()
            }}
            @touchcancel=${(e) => {
              //if (this.toggleMode) return; // Ignore in toggle mode
              e.preventDefault();
-             this._debugLog('touchcancel event');
-             this.closeMicrophone();
+             this._debugLog('touchcancel event')
+             this.pressActive = false
+             this.closeMicrophone()
            }}>
         <div class="outline"></div>
         <div class="outline" id="delayed"></div>

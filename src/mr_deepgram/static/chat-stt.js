@@ -7,8 +7,8 @@ class ChatSTT extends BaseEl {
     isRecording: { type: Boolean, reflect: true, attribute: 'recording' },
     transcript: { type: String },
     dontInterrupt: { type: Boolean },
-    isInitialized: { type: Boolean },
-    toggleMode: { type: Boolean, attribute: 'toggle-mode' }
+    isInitialized: { type: Boolean }
+    //toggleMode: { type: Boolean, attribute: 'toggle-mode' }
   }
 
   static styles = css`
@@ -159,7 +159,7 @@ class ChatSTT extends BaseEl {
     this.transcript = ''
     this.dontInterrupt = true
     this.isInitialized = false
-    this.toggleMode = true
+    // this.toggleMode = true
     this.deepgramToken = null
     this.initializing = false
     this.userMedia = null
@@ -515,13 +515,13 @@ class ChatSTT extends BaseEl {
              if (!e.touches) this.closeMicrophone();
            }}
            @click=${(e) => {
-             //if (!this.toggleMode) return; // Only handle in toggle mode
-             this._debugLog('click event (toggle mode)');
-             if (this.isRecording) {
-               this.closeMicrophone();
-             } else {
-               this.openMicrophone();
-             }
+             // Toggle mode is disabled for now; ignore click to avoid conflicts
+             // with push-and-hold (mousedown/mouseup, touchstart/touchend).
+             try {
+               e.preventDefault();
+               e.stopPropagation();
+             } catch (err) {}
+             this._debugLog('click event ignored (push-and-hold mode active)');
            }}
            @touchstart=${(e) => {
              //if (this.toggleMode) return; // Ignore in toggle mode, use tap instead

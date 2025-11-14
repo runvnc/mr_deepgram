@@ -510,7 +510,7 @@ class ChatSTT extends BaseEl {
              }
            }}
            @mouseup=${(e) => {
-             if (this.toggleMode) return; // Ignore in toggle mode
+             //if (this.toggleMode) return; // Ignore in toggle mode
              this._debugLog('mouseup event');
              if (!e.touches) this.closeMicrophone();
            }}

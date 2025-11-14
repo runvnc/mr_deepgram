@@ -405,7 +405,7 @@ class ChatSTT extends BaseEl {
                 this.partialTranscript = "" 
                 // || !this.dontInterrupt || this.toggleMode) {
 
-                if (true) {
+                if (false) {
                   this.chatForm._send()
                   this.transcript = ""
                 }

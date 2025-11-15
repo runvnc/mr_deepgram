@@ -7,8 +7,7 @@ class ChatSTT extends BaseEl {
     isRecording: { type: Boolean, reflect: true, attribute: 'recording' },
     transcript: { type: String },
     dontInterrupt: { type: Boolean },
-    isInitialized: { type: Boolean },
-    isWarmingUp: { type: Boolean, reflect: true, attribute: 'warming-up' }
+    isInitialized: { type: Boolean }
     //toggleMode: { type: Boolean, attribute: 'toggle-mode' }
   }
 
@@ -80,23 +79,6 @@ class ChatSTT extends BaseEl {
       box-shadow: 0px 0px 40px #f90000;
     }
 
-    :host([warming-up]) .button {
-      background: #ffaa50;
-      box-shadow: 0px 0px 40px #ff9900;
-      animation: warmup-pulse 0.8s ease-in-out infinite;
-    }
-
-    @keyframes warmup-pulse {
-      0%, 100% {
-        transform: scale(1);
-        opacity: 0.8;
-      }
-      50% {
-        transform: scale(1.05);
-        opacity: 1;
-      }
-    }
-
     @keyframes pulse {
       0% {
         transform: scale(0);
@@ -135,11 +117,6 @@ class ChatSTT extends BaseEl {
     :host([recording]) #circlein {
       background: #e16b6b;
       box-shadow: 0px -2px 15px #e0ff94;
-    }
-
-    :host([warming-up]) #circlein {
-      background: #ffc470;
-      box-shadow: 0px -2px 15px #ffe094;
     }
 
     .mic-icon {
@@ -182,7 +159,6 @@ class ChatSTT extends BaseEl {
     this.transcript = ''
     this.dontInterrupt = true
     this.isInitialized = false
-    this.isWarmingUp = false
     // this.toggleMode = true
     this.deepgramToken = null
     this.initializing = false
@@ -223,17 +199,8 @@ class ChatSTT extends BaseEl {
 
   async getMicrophone() {
     try {
-      // If we already have an active stream, reuse it for instant response
-      if (this.userMedia && this.userMedia.active) {
-        this._debugLog("Reusing existing media stream - no delay!")
-        return new MediaRecorder(this.userMedia);
-      }
-
-      // First time getting microphone - show warming up state
-      this.isWarmingUp = true
-      this.requestUpdate()
-
       // Check if we have the new API
+      //if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         this.userMedia = await navigator.mediaDevices.getUserMedia({ audio: true });
       } catch (error) {
@@ -250,26 +217,22 @@ class ChatSTT extends BaseEl {
                            navigator.msGetUserMedia;
         
         if (!getUserMedia) {
-          this.isWarmingUp = false
-          this.requestUpdate()
           throw new Error('getUserMedia is not supported in this browser');
         }
         this.userMedia = await getUserMedia({ audio: true });
+        //this.userMedia = await new Promise((resolve, reject) => {
+        //  getUserMedia.call(navigator, { audio: true }, resolve, reject);
+        //});
       }
 
       if (this.userMedia) {
-        this._debugLog("Got microphone access successfully - stream will stay alive for instant subsequent use");
+        this._debugLog("Got microphone access successfully");
       } else {
         this._debugLog("Failed to get microphone access");
       }
-      
-      this.isWarmingUp = false
-      this.requestUpdate()
       return new MediaRecorder(this.userMedia);
     } catch (error) {
       this._debugLog(`Microphone error: ${error.name} - ${error.message}`);
-      this.isWarmingUp = false
-      this.requestUpdate()
       throw error;
     }
   }
@@ -310,11 +273,19 @@ class ChatSTT extends BaseEl {
 
       // After getting microphone access, user may have already released the button
       if (!this.pressActive) {
-        this._debugLog("Press released before microphone ready; keeping stream alive but not recording.")
-        // Keep the media stream alive for next time - don't stop it!
+        this._debugLog("Press released before microphone ready; cleaning up.")
+        try {
+          if (this.userMedia) {
+            this.userMedia.getTracks().forEach((track) => {
+              track.stop()
+            })
+          }
+        } catch (e) {
+          console.warn("Error stopping media tracks after cancelled open:", e)
+        }
+        this.userMedia = null
         this.microphone = null
         this.isRecording = false
-        this.isWarmingUp = false
         this.requestUpdate()
         return
       }
@@ -352,7 +323,6 @@ class ChatSTT extends BaseEl {
       console.error("Error opening microphone:", e)
       this._debugLog(`Error: ${e.message}`)
       this.isRecording = false 
-      this.isWarmingUp = false
       this.requestUpdate()
     }
   }
@@ -393,19 +363,17 @@ class ChatSTT extends BaseEl {
       this.transcript = ''
       this.partialTranscript = ''
       
-      // IMPORTANT: Keep the media stream alive for instant response on next press
-      // Don't stop the tracks - we'll reuse them
-      // if (this.userMedia) {
-      //   try {
-      //     this.userMedia.getTracks().forEach((track) => {
-      //       track.stop()
-      //     })
-      //   } catch (e) {
-      //     console.warn("Error stopping media tracks:", e)
-      //   }
-      // }
+      if (this.userMedia) {
+        try {
+          this.userMedia.getTracks().forEach((track) => {
+            track.stop()
+          })
+        } catch (e) {
+          console.warn("Error stopping media tracks:", e)
+        }
+      }
       
-      // Don't set userMedia to null - keep it for reuse!
+      this.userMedia = null
       this.microphone = null
       this.isRecording = false
       this.requestUpdate()
@@ -577,12 +545,9 @@ class ChatSTT extends BaseEl {
       } catch (e) {}
     }
     
-    // NOW we stop the media stream since component is being removed
     if (this.userMedia) {
       try {
-        this._debugLog("Component disconnecting - stopping media stream")
         this.userMedia.getTracks().forEach(track => track.stop())
-        this.userMedia = null
       } catch (e) {}
     }
 

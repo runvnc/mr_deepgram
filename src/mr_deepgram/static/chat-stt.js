@@ -254,7 +254,11 @@ class ChatSTT extends BaseEl {
           this.requestUpdate()
           throw new Error('getUserMedia is not supported in this browser');
         }
-        this.userMedia = await getUserMedia({ audio: true });
+        
+        // Wrap the callback-based API in a Promise
+        this.userMedia = await new Promise((resolve, reject) => {
+          getUserMedia.call(navigator, { audio: true }, resolve, reject);
+        });
       }
 
       if (this.userMedia) {

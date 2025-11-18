@@ -188,6 +188,7 @@ class ChatSTT extends BaseEl {
     this.initializing = false
     this.userMedia = null
     this.pressActive = false
+    this.lastStreamUse = null
 
     this.fetchTempToken().then(key => { this.deepgramToken = key })
     this.microphone = null
@@ -221,12 +222,61 @@ class ChatSTT extends BaseEl {
  
   }
 
-  async getMicrophone() {
+  isStreamHealthy(stream) {
+    if (!stream) return false;
+    
     try {
-      // If we already have an active stream, reuse it for instant response
-      if (this.userMedia && this.userMedia.active) {
-        this._debugLog("Reusing existing media stream - no delay!")
-        return new MediaRecorder(this.userMedia);
+      const tracks = stream.getTracks();
+      if (tracks.length === 0) {
+        this._debugLog("Stream has no tracks");
+        return false;
+      }
+      
+      // Check if all tracks are live and enabled
+      const allHealthy = tracks.every(track => {
+        const isHealthy = track.readyState === 'live' && track.enabled;
+        if (!isHealthy) {
+          this._debugLog(`Track unhealthy: readyState=${track.readyState}, enabled=${track.enabled}`);
+        }
+        return isHealthy;
+      });
+      
+      return allHealthy;
+    } catch (e) {
+      this._debugLog(`Error checking stream health: ${e.message}`);
+      return false;
+    }
+  }
+
+  async getMicrophone() {
+    const STREAM_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+    
+    try {
+      // Check if we have a healthy stream that's not too old
+      if (this.userMedia && this.isStreamHealthy(this.userMedia)) {
+        const timeSinceLastUse = Date.now() - (this.lastStreamUse || 0);
+        
+        if (timeSinceLastUse < STREAM_TIMEOUT) {
+          this._debugLog(`Reusing existing media stream (age: ${Math.round(timeSinceLastUse/1000)}s)`);
+          this.lastStreamUse = Date.now();
+          return new MediaRecorder(this.userMedia);
+        } else {
+          this._debugLog(`Stream too old (${Math.round(timeSinceLastUse/1000)}s), resetting...`);
+          try {
+            this.userMedia.getTracks().forEach(track => track.stop());
+          } catch (e) {
+            this._debugLog(`Error stopping old tracks: ${e.message}`);
+          }
+          this.userMedia = null;
+        }
+      } else if (this.userMedia) {
+        this._debugLog("Stream exists but is unhealthy, resetting...");
+        try {
+          this.userMedia.getTracks().forEach(track => track.stop());
+        } catch (e) {
+          this._debugLog(`Error stopping unhealthy tracks: ${e.message}`);
+        }
+        this.userMedia = null;
       }
 
       // First time getting microphone - show warming up state
@@ -263,6 +313,7 @@ class ChatSTT extends BaseEl {
 
       if (this.userMedia) {
         this._debugLog("Got microphone access successfully - stream will stay alive for instant subsequent use");
+        this.lastStreamUse = Date.now();
       } else {
         this._debugLog("Failed to get microphone access");
       }
